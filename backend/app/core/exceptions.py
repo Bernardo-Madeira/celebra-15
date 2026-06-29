@@ -15,3 +15,23 @@ class CredenciaisInvalidasError(DomainError):
 
 class UsuarioNaoEncontradoError(DomainError):
     pass
+
+
+class TokenInvalidoError(DomainError):
+    """Refresh token ou reset token não encontrado ou revogado."""
+
+
+class TokenExpiradoError(DomainError):
+    """Token válido mas com data de expiração no passado."""
+
+
+class TokenJaUsadoError(DomainError):
+    """Password reset token já foi utilizado."""
+
+
+class SenhaAtualInvalidaError(DomainError):
+    """Senha atual informada não confere ao alterar senha."""
+
+
+class ConvidadoNaoEncontradoError(DomainError):
+    """Token de confirmação de convidado inexistente."""

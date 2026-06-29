@@ -5,6 +5,7 @@ que importa `app.models`).
 """
 
 from app.models.usuario import Usuario
+from app.models.auth import RefreshToken, PasswordResetToken
 from app.models.evento import Evento
 from app.models.convidado import Convidado, Acompanhante, Mesa
 from app.models.presente import Presente, ReservaPresente
@@ -17,6 +18,8 @@ from app.models.mural import Album, Foto, Postagem, Comentario, Curtida
 
 __all__ = [
     "Usuario",
+    "RefreshToken",
+    "PasswordResetToken",
     "Evento",
     "Convidado",
     "Acompanhante",

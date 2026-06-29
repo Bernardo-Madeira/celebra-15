@@ -31,3 +31,5 @@ class Usuario(Base):
     postagens = relationship("Postagem", back_populates="autor")
     comentarios = relationship("Comentario", back_populates="autor")
     curtidas = relationship("Curtida", back_populates="usuario")
+    refresh_tokens = relationship("RefreshToken", back_populates="usuario", cascade="all, delete-orphan")
+    tokens_reset_senha = relationship("PasswordResetToken", back_populates="usuario", cascade="all, delete-orphan")

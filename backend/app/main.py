@@ -4,8 +4,13 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.core.exceptions import (
+    ConvidadoNaoEncontradoError,
     CredenciaisInvalidasError,
     EmailJaCadastradoError,
+    SenhaAtualInvalidaError,
+    TokenExpiradoError,
+    TokenInvalidoError,
+    TokenJaUsadoError,
     UsuarioNaoEncontradoError,
 )
 from app.routers import auth, health, usuario
@@ -38,6 +43,31 @@ async def credenciais_invalidas_handler(request: Request, exc: CredenciaisInvali
 @app.exception_handler(UsuarioNaoEncontradoError)
 async def usuario_nao_encontrado_handler(request: Request, exc: UsuarioNaoEncontradoError):
     return JSONResponse(status_code=404, content={"detail": "Usuário não encontrado."})
+
+
+@app.exception_handler(TokenInvalidoError)
+async def token_invalido_handler(request: Request, exc: TokenInvalidoError):
+    return JSONResponse(status_code=401, content={"detail": "Token inválido ou revogado."})
+
+
+@app.exception_handler(TokenExpiradoError)
+async def token_expirado_handler(request: Request, exc: TokenExpiradoError):
+    return JSONResponse(status_code=401, content={"detail": "Token expirado."})
+
+
+@app.exception_handler(TokenJaUsadoError)
+async def token_ja_usado_handler(request: Request, exc: TokenJaUsadoError):
+    return JSONResponse(status_code=400, content={"detail": "Token já foi utilizado."})
+
+
+@app.exception_handler(SenhaAtualInvalidaError)
+async def senha_atual_invalida_handler(request: Request, exc: SenhaAtualInvalidaError):
+    return JSONResponse(status_code=400, content={"detail": "Senha atual incorreta."})
+
+
+@app.exception_handler(ConvidadoNaoEncontradoError)
+async def convidado_nao_encontrado_handler(request: Request, exc: ConvidadoNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Token de confirmação inválido."})
 
 
 app.include_router(health.router)

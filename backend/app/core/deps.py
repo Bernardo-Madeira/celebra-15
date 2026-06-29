@@ -40,3 +40,14 @@ def require_organizador(
             detail="Apenas organizadores podem realizar esta ação.",
         )
     return usuario
+
+
+def require_organizador_ou_cerimonialista(
+    usuario: Usuario = Depends(get_current_usuario),
+) -> Usuario:
+    if usuario.tipo_perfil not in (TipoPerfil.ORGANIZADOR, TipoPerfil.CERIMONIALISTA):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso restrito a organizadores e cerimonialistas.",
+        )
+    return usuario
