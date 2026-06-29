@@ -1,8 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.routers import health
+from app.core.exceptions import (
+    CredenciaisInvalidasError,
+    EmailJaCadastradoError,
+    UsuarioNaoEncontradoError,
+)
+from app.routers import auth, health, usuario
 
 app = FastAPI(
     title="celebra-15 API",
@@ -18,12 +24,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(EmailJaCadastradoError)
+async def email_ja_cadastrado_handler(request: Request, exc: EmailJaCadastradoError):
+    return JSONResponse(status_code=409, content={"detail": "E-mail já cadastrado."})
+
+
+@app.exception_handler(CredenciaisInvalidasError)
+async def credenciais_invalidas_handler(request: Request, exc: CredenciaisInvalidasError):
+    return JSONResponse(status_code=401, content={"detail": "Credenciais inválidas."})
+
+
+@app.exception_handler(UsuarioNaoEncontradoError)
+async def usuario_nao_encontrado_handler(request: Request, exc: UsuarioNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Usuário não encontrado."})
+
+
 app.include_router(health.router)
+app.include_router(auth.router)
+app.include_router(usuario.router)
 
 # Próximos routers a registrar aqui conforme implementados:
 # eventos, convidados, mesas, presentes, fornecedores, pagamentos,
 # tarefas, homenagens, anotacoes_cerimoniais, musicas, avisos,
-# albuns, fotos, postagens, comentarios, curtidas, auth
+# albuns, fotos, postagens, comentarios, curtidas
 
 
 @app.get("/")
