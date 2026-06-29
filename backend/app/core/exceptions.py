@@ -34,4 +34,24 @@ class SenhaAtualInvalidaError(DomainError):
 
 
 class ConvidadoNaoEncontradoError(DomainError):
-    """Token de confirmação de convidado inexistente."""
+    pass
+
+
+class EventoNaoEncontradoError(DomainError):
+    pass
+
+
+class AcessoNegadoError(DomainError):
+    pass
+
+
+class MesaNaoEncontradaError(DomainError):
+    pass
+
+
+class MesaLotadaError(DomainError):
+    pass
+
+
+class LimiteAcompanhantesExcedidoError(DomainError):
+    pass
