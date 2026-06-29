@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     secret_key: str = "troque-esta-chave-por-uma-string-aleatoria-segura"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    refresh_token_expire_days: int = 7
+    password_reset_expire_minutes: int = 15
 
     frontend_origin: str = "http://localhost:5173"
 

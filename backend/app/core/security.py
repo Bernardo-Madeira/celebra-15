@@ -1,11 +1,9 @@
 """
-Funções utilitárias de segurança: hash/verificação de senha (bcrypt)
-e criação/decodificação de tokens JWT.
-
-Usado por: services de autenticação de Organizador e Cerimonialista.
-Não se aplica ao acesso de Convidado, que usa token_confirmacao (ver app/core/tokens.py).
+Funções utilitárias de segurança: hash/verificação de senha (bcrypt),
+criação/decodificação de JWT e geração de tokens opacos (refresh / reset).
 """
 
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
@@ -25,7 +23,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(subject: str, extra_claims: dict | None = None) -> str:
-    """Gera um JWT. `subject` normalmente é o id do Usuario (organizador/cerimonialista)."""
+    """Gera um JWT de curta duração. `subject` é o id do Usuario."""
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
     )
@@ -41,3 +39,19 @@ def decode_access_token(token: str) -> dict | None:
         return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
     except JWTError:
         return None
+
+
+def generate_refresh_token() -> tuple[str, datetime]:
+    """Gera um token opaco seguro e sua data de expiração."""
+    token = secrets.token_urlsafe(64)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
+    return token, expires_at
+
+
+def generate_password_reset_token() -> tuple[str, datetime]:
+    """Gera um token opaco de uso único para reset de senha (15 minutos)."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.password_reset_expire_minutes
+    )
+    return token, expires_at
