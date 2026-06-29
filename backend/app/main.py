@@ -4,9 +4,14 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.core.exceptions import (
+    AcessoNegadoError,
     ConvidadoNaoEncontradoError,
     CredenciaisInvalidasError,
     EmailJaCadastradoError,
+    EventoNaoEncontradoError,
+    LimiteAcompanhantesExcedidoError,
+    MesaLotadaError,
+    MesaNaoEncontradaError,
     SenhaAtualInvalidaError,
     TokenExpiradoError,
     TokenInvalidoError,
@@ -14,6 +19,8 @@ from app.core.exceptions import (
     UsuarioNaoEncontradoError,
 )
 from app.routers import auth, health, usuario
+from app.routers.convidado import confirmacao_router, router as convidado_router
+from app.routers.evento import router as evento_router
 
 app = FastAPI(
     title="celebra-15 API",
@@ -67,17 +74,47 @@ async def senha_atual_invalida_handler(request: Request, exc: SenhaAtualInvalida
 
 @app.exception_handler(ConvidadoNaoEncontradoError)
 async def convidado_nao_encontrado_handler(request: Request, exc: ConvidadoNaoEncontradoError):
-    return JSONResponse(status_code=404, content={"detail": "Token de confirmação inválido."})
+    return JSONResponse(status_code=404, content={"detail": "Convidado não encontrado."})
+
+
+@app.exception_handler(EventoNaoEncontradoError)
+async def evento_nao_encontrado_handler(request: Request, exc: EventoNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Evento não encontrado."})
+
+
+@app.exception_handler(AcessoNegadoError)
+async def acesso_negado_handler(request: Request, exc: AcessoNegadoError):
+    return JSONResponse(status_code=403, content={"detail": "Acesso negado."})
+
+
+@app.exception_handler(MesaNaoEncontradaError)
+async def mesa_nao_encontrada_handler(request: Request, exc: MesaNaoEncontradaError):
+    return JSONResponse(status_code=404, content={"detail": "Mesa não encontrada."})
+
+
+@app.exception_handler(MesaLotadaError)
+async def mesa_lotada_handler(request: Request, exc: MesaLotadaError):
+    return JSONResponse(status_code=422, content={"detail": "Mesa sem capacidade disponível."})
+
+
+@app.exception_handler(LimiteAcompanhantesExcedidoError)
+async def limite_acompanhantes_handler(request: Request, exc: LimiteAcompanhantesExcedidoError):
+    return JSONResponse(
+        status_code=422, content={"detail": "Número máximo de acompanhantes excedido."}
+    )
 
 
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
+app.include_router(evento_router)
+app.include_router(convidado_router)
+app.include_router(confirmacao_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# eventos, convidados, mesas, presentes, fornecedores, pagamentos,
-# tarefas, homenagens, anotacoes_cerimoniais, musicas, avisos,
-# albuns, fotos, postagens, comentarios, curtidas
+# presentes, fornecedores, pagamentos, tarefas, homenagens,
+# anotacoes_cerimoniais, musicas, avisos, albuns, fotos,
+# postagens, comentarios, curtidas
 
 
 @app.get("/")
