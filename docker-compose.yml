@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: celebra15-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: celebra15
+      MYSQL_USER: celebra15
+      MYSQL_PASSWORD: celebra15pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - celebra15_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  celebra15_mysql_data:

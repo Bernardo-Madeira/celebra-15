@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+*.db
+
+# Environment
+.env
+.env.local
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic (mantém versions, ignora cache)
+backend/alembic/__pycache__/
