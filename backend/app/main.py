@@ -6,12 +6,16 @@ from app.config import settings
 from app.core.exceptions import (
     AcessoNegadoError,
     ConvidadoNaoEncontradoError,
+    CotaPresenteEsgotadaError,
     CredenciaisInvalidasError,
     EmailJaCadastradoError,
     EventoNaoEncontradoError,
     LimiteAcompanhantesExcedidoError,
     MesaLotadaError,
     MesaNaoEncontradaError,
+    PresenteNaoEncontradoError,
+    ReservaPresenteJaExisteError,
+    ReservaPresenteNaoEncontradaError,
     SenhaAtualInvalidaError,
     TokenExpiradoError,
     TokenInvalidoError,
@@ -21,6 +25,7 @@ from app.core.exceptions import (
 from app.routers import auth, health, usuario
 from app.routers.convidado import confirmacao_router, router as convidado_router
 from app.routers.evento import router as evento_router
+from app.routers.presente import reserva_router as presente_reserva_router, router as presente_router
 
 app = FastAPI(
     title="celebra-15 API",
@@ -104,15 +109,43 @@ async def limite_acompanhantes_handler(request: Request, exc: LimiteAcompanhante
     )
 
 
+@app.exception_handler(PresenteNaoEncontradoError)
+async def presente_nao_encontrado_handler(request: Request, exc: PresenteNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Presente não encontrado."})
+
+
+@app.exception_handler(ReservaPresenteNaoEncontradaError)
+async def reserva_presente_nao_encontrada_handler(
+    request: Request, exc: ReservaPresenteNaoEncontradaError
+):
+    return JSONResponse(status_code=404, content={"detail": "Reserva não encontrada."})
+
+
+@app.exception_handler(ReservaPresenteJaExisteError)
+async def reserva_presente_ja_existe_handler(request: Request, exc: ReservaPresenteJaExisteError):
+    return JSONResponse(
+        status_code=409, content={"detail": "Você já contribuiu com este presente."}
+    )
+
+
+@app.exception_handler(CotaPresenteEsgotadaError)
+async def cota_presente_esgotada_handler(request: Request, exc: CotaPresenteEsgotadaError):
+    return JSONResponse(
+        status_code=422, content={"detail": "Cota de contribuintes deste presente esgotada."}
+    )
+
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
 app.include_router(evento_router)
 app.include_router(convidado_router)
 app.include_router(confirmacao_router)
+app.include_router(presente_router)
+app.include_router(presente_reserva_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# presentes, fornecedores, pagamentos, tarefas, homenagens,
+# fornecedores, pagamentos, tarefas, homenagens,
 # anotacoes_cerimoniais, musicas, avisos, albuns, fotos,
 # postagens, comentarios, curtidas
 
