@@ -6,6 +6,7 @@ from app.config import settings
 from app.core.exceptions import (
     AcessoNegadoError,
     AnotacaoCerimonialNaoEncontradaError,
+    AvisoNaoEncontradoError,
     ConvidadoNaoEncontradoError,
     CotaPresenteEsgotadaError,
     CredenciaisInvalidasError,
@@ -30,6 +31,7 @@ from app.core.exceptions import (
 )
 from app.routers import auth, health, usuario
 from app.routers.anotacao_cerimonial import router as anotacao_cerimonial_router
+from app.routers.aviso import router as aviso_router
 from app.routers.convidado import confirmacao_router, router as convidado_router
 from app.routers.evento import router as evento_router
 from app.routers.fornecedor import router as fornecedor_router
@@ -179,6 +181,11 @@ async def anotacao_cerimonial_nao_encontrada_handler(
     return JSONResponse(status_code=404, content={"detail": "Anotação cerimonial não encontrada."})
 
 
+@app.exception_handler(AvisoNaoEncontradoError)
+async def aviso_nao_encontrado_handler(request: Request, exc: AvisoNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Aviso não encontrado."})
+
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
@@ -191,9 +198,10 @@ app.include_router(fornecedor_router)
 app.include_router(tarefa_router)
 app.include_router(homenagem_router)
 app.include_router(anotacao_cerimonial_router)
+app.include_router(aviso_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# musicas, avisos, albuns, fotos, postagens, comentarios, curtidas
+# musicas, albuns, fotos, postagens, comentarios, curtidas
 
 
 @app.get("/")
