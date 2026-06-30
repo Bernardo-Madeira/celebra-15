@@ -9,8 +9,15 @@ from app.models.usuario import Usuario
 
 
 def _verificar_acesso(evento: Evento, usuario: Usuario) -> None:
-    """Organizador só acessa seus próprios eventos; cerimonialista acessa todos."""
+    """
+    Organizador só acessa seus próprios eventos; cerimonialista acessa todos;
+    convidado só acessa o evento ao qual está vinculado.
+    """
     if usuario.tipo_perfil == TipoPerfil.ORGANIZADOR and evento.usuario_organizador_id != usuario.id:
+        raise AcessoNegadoError()
+    if usuario.tipo_perfil == TipoPerfil.CONVIDADO and (
+        usuario.convidado is None or usuario.convidado.evento_id != evento.id
+    ):
         raise AcessoNegadoError()
 
 
