@@ -5,12 +5,14 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.core.exceptions import (
     AcessoNegadoError,
+    AnotacaoCerimonialNaoEncontradaError,
     ConvidadoNaoEncontradoError,
     CotaPresenteEsgotadaError,
     CredenciaisInvalidasError,
     EmailJaCadastradoError,
     EventoNaoEncontradoError,
     FornecedorNaoEncontradoError,
+    HomenagemNaoEncontradaError,
     LimiteAcompanhantesExcedidoError,
     MesaLotadaError,
     MesaNaoEncontradaError,
@@ -27,9 +29,11 @@ from app.core.exceptions import (
     ValorSinalInvalidoError,
 )
 from app.routers import auth, health, usuario
+from app.routers.anotacao_cerimonial import router as anotacao_cerimonial_router
 from app.routers.convidado import confirmacao_router, router as convidado_router
 from app.routers.evento import router as evento_router
 from app.routers.fornecedor import router as fornecedor_router
+from app.routers.homenagem import router as homenagem_router
 from app.routers.presente import reserva_router as presente_reserva_router, router as presente_router
 from app.routers.tarefa import router as tarefa_router
 
@@ -163,6 +167,18 @@ async def tarefa_nao_encontrado_handler(request: Request, exc: TarefaNaoEncontra
     return JSONResponse(status_code=404, content={"detail": "Tarefa não encontrada."})
 
 
+@app.exception_handler(HomenagemNaoEncontradaError)
+async def homenagem_nao_encontrada_handler(request: Request, exc: HomenagemNaoEncontradaError):
+    return JSONResponse(status_code=404, content={"detail": "Homenagem não encontrada."})
+
+
+@app.exception_handler(AnotacaoCerimonialNaoEncontradaError)
+async def anotacao_cerimonial_nao_encontrada_handler(
+    request: Request, exc: AnotacaoCerimonialNaoEncontradaError
+):
+    return JSONResponse(status_code=404, content={"detail": "Anotação cerimonial não encontrada."})
+
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
@@ -173,10 +189,11 @@ app.include_router(presente_router)
 app.include_router(presente_reserva_router)
 app.include_router(fornecedor_router)
 app.include_router(tarefa_router)
+app.include_router(homenagem_router)
+app.include_router(anotacao_cerimonial_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# homenagens, anotacoes_cerimoniais, musicas, avisos,
-# albuns, fotos, postagens, comentarios, curtidas
+# musicas, avisos, albuns, fotos, postagens, comentarios, curtidas
 
 
 @app.get("/")

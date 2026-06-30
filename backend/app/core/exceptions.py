@@ -87,3 +87,11 @@ class ValorSinalInvalidoError(DomainError):
 
 class TarefaNaoEncontradoError(DomainError):
     pass
+
+
+class HomenagemNaoEncontradaError(DomainError):
+    pass
+
+
+class AnotacaoCerimonialNaoEncontradaError(DomainError):
+    pass
