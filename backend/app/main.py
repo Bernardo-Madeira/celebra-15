@@ -5,19 +5,25 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.core.exceptions import (
     AcessoNegadoError,
+    AlbumNaoEncontradoError,
     AnotacaoCerimonialNaoEncontradaError,
     AvisoNaoEncontradoError,
+    ComentarioNaoEncontradoError,
     ConvidadoNaoEncontradoError,
     CotaPresenteEsgotadaError,
     CredenciaisInvalidasError,
+    CurtidaJaExisteError,
+    CurtidaNaoEncontradaError,
     EmailJaCadastradoError,
     EventoNaoEncontradoError,
     FornecedorNaoEncontradoError,
+    FotoNaoEncontradaError,
     HomenagemNaoEncontradaError,
     LimiteAcompanhantesExcedidoError,
     MesaLotadaError,
     MesaNaoEncontradaError,
     PagamentoNaoEncontradoError,
+    PostagemNaoEncontradaError,
     PresenteNaoEncontradoError,
     ReservaPresenteJaExisteError,
     ReservaPresenteNaoEncontradaError,
@@ -36,6 +42,7 @@ from app.routers.convidado import confirmacao_router, router as convidado_router
 from app.routers.evento import router as evento_router
 from app.routers.fornecedor import router as fornecedor_router
 from app.routers.homenagem import router as homenagem_router
+from app.routers.mural import album_router as mural_album_router, postagem_router as mural_postagem_router
 from app.routers.presente import reserva_router as presente_reserva_router, router as presente_router
 from app.routers.tarefa import router as tarefa_router
 
@@ -186,6 +193,36 @@ async def aviso_nao_encontrado_handler(request: Request, exc: AvisoNaoEncontrado
     return JSONResponse(status_code=404, content={"detail": "Aviso não encontrado."})
 
 
+@app.exception_handler(AlbumNaoEncontradoError)
+async def album_nao_encontrado_handler(request: Request, exc: AlbumNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Álbum não encontrado."})
+
+
+@app.exception_handler(FotoNaoEncontradaError)
+async def foto_nao_encontrada_handler(request: Request, exc: FotoNaoEncontradaError):
+    return JSONResponse(status_code=404, content={"detail": "Foto não encontrada."})
+
+
+@app.exception_handler(PostagemNaoEncontradaError)
+async def postagem_nao_encontrada_handler(request: Request, exc: PostagemNaoEncontradaError):
+    return JSONResponse(status_code=404, content={"detail": "Postagem não encontrada."})
+
+
+@app.exception_handler(ComentarioNaoEncontradoError)
+async def comentario_nao_encontrado_handler(request: Request, exc: ComentarioNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Comentário não encontrado."})
+
+
+@app.exception_handler(CurtidaJaExisteError)
+async def curtida_ja_existe_handler(request: Request, exc: CurtidaJaExisteError):
+    return JSONResponse(status_code=409, content={"detail": "Você já curtiu esta postagem."})
+
+
+@app.exception_handler(CurtidaNaoEncontradaError)
+async def curtida_nao_encontrada_handler(request: Request, exc: CurtidaNaoEncontradaError):
+    return JSONResponse(status_code=404, content={"detail": "Curtida não encontrada."})
+
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
@@ -199,9 +236,11 @@ app.include_router(tarefa_router)
 app.include_router(homenagem_router)
 app.include_router(anotacao_cerimonial_router)
 app.include_router(aviso_router)
+app.include_router(mural_album_router)
+app.include_router(mural_postagem_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# musicas, albuns, fotos, postagens, comentarios, curtidas
+# musicas (playlist colaborativa)
 
 
 @app.get("/")

@@ -99,3 +99,27 @@ class AnotacaoCerimonialNaoEncontradaError(DomainError):
 
 class AvisoNaoEncontradoError(DomainError):
     pass
+
+
+class AlbumNaoEncontradoError(DomainError):
+    pass
+
+
+class FotoNaoEncontradaError(DomainError):
+    pass
+
+
+class PostagemNaoEncontradaError(DomainError):
+    pass
+
+
+class ComentarioNaoEncontradoError(DomainError):
+    pass
+
+
+class CurtidaJaExisteError(DomainError):
+    """Usuário já curtiu esta postagem."""
+
+
+class CurtidaNaoEncontradaError(DomainError):
+    """Usuário tentou descurtir uma postagem que não havia curtido."""
