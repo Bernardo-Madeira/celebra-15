@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.core.exceptions import (
     AcessoNegadoError,
+    AcompanhanteNaoEncontradoError,
     AlbumNaoEncontradoError,
     AnotacaoCerimonialNaoEncontradaError,
     AvisoNaoEncontradoError,
@@ -126,6 +127,11 @@ async def limite_acompanhantes_handler(request: Request, exc: LimiteAcompanhante
     return JSONResponse(
         status_code=422, content={"detail": "Número máximo de acompanhantes excedido."}
     )
+
+
+@app.exception_handler(AcompanhanteNaoEncontradoError)
+async def acompanhante_nao_encontrado_handler(request: Request, exc: AcompanhanteNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Acompanhante não encontrado."})
 
 
 @app.exception_handler(PresenteNaoEncontradoError)

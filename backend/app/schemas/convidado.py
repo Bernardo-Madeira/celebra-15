@@ -22,6 +22,14 @@ class MesaRead(BaseModel):
     capacidade: int
 
 
+class AcompanhanteCreate(BaseModel):
+    nome: str
+
+
+class AcompanhanteUpdate(BaseModel):
+    nome: str | None = None
+
+
 class AcompanhanteRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -85,6 +85,16 @@ def _criar_mesa(
     return resp.json()
 
 
+def _criar_acompanhante(
+    client: TestClient, token: str, evento_id: int, convidado_id: int, nome: str = "Maria"
+):
+    return client.post(
+        f"/eventos/{evento_id}/convidados/{convidado_id}/acompanhantes",
+        json={"nome": nome},
+        headers=_auth(token),
+    )
+
+
 # ---------------------------------------------------------------------------
 # CRUD de Convidados
 # ---------------------------------------------------------------------------
@@ -192,6 +202,133 @@ def test_excluir_convidado(client):
         f"/eventos/{evento['id']}/convidados/{convidado['id']}", headers=_auth(token)
     )
     assert resp_get.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# CRUD de Acompanhantes (administrativo, pelo organizador)
+# ---------------------------------------------------------------------------
+
+
+def test_criar_acompanhante_por_organizador(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    resp = _criar_acompanhante(client, token, evento["id"], convidado["id"], "Maria")
+    assert resp.status_code == 201
+    assert resp.json()["nome"] == "Maria"
+    assert resp.json()["convidado_id"] == convidado["id"]
+
+
+def test_criar_acompanhante_excede_limite_retorna_422(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token, {**EVENTO_BASE, "max_acompanhantes_por_convidado": 1})
+    convidado = _criar_convidado(client, token, evento["id"])
+    _criar_acompanhante(client, token, evento["id"], convidado["id"], "Maria")
+    resp = _criar_acompanhante(client, token, evento["id"], convidado["id"], "João")
+    assert resp.status_code == 422
+
+
+def test_criar_acompanhante_sem_autenticacao_retorna_401(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    resp = client.post(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes",
+        json={"nome": "Maria"},
+    )
+    assert resp.status_code == 401
+
+
+def test_cerimonialista_nao_cria_acompanhante_retorna_403(client):
+    token_org = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token_org)
+    convidado = _criar_convidado(client, token_org, evento["id"])
+    token_ceri = _token_cerimonialista(client, token_org)
+    resp = _criar_acompanhante(client, token_ceri, evento["id"], convidado["id"], "Maria")
+    assert resp.status_code == 403
+
+
+def test_listar_acompanhantes(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    _criar_acompanhante(client, token, evento["id"], convidado["id"], "Maria")
+    _criar_acompanhante(client, token, evento["id"], convidado["id"], "João")
+    resp = client.get(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes",
+        headers=_auth(token),
+    )
+    assert resp.status_code == 200
+    assert len(resp.json()) == 2
+
+
+def test_obter_acompanhante_por_id(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    acompanhante = _criar_acompanhante(client, token, evento["id"], convidado["id"]).json()
+    resp = client.get(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes/{acompanhante['id']}",
+        headers=_auth(token),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["id"] == acompanhante["id"]
+
+
+def test_obter_acompanhante_inexistente_retorna_404(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    resp = client.get(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes/9999",
+        headers=_auth(token),
+    )
+    assert resp.status_code == 404
+
+
+def test_atualizar_acompanhante(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    acompanhante = _criar_acompanhante(client, token, evento["id"], convidado["id"]).json()
+    resp = client.patch(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes/{acompanhante['id']}",
+        json={"nome": "Maria Atualizada"},
+        headers=_auth(token),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["nome"] == "Maria Atualizada"
+
+
+def test_excluir_acompanhante(client):
+    token = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token)
+    convidado = _criar_convidado(client, token, evento["id"])
+    acompanhante = _criar_acompanhante(client, token, evento["id"], convidado["id"]).json()
+    resp = client.delete(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes/{acompanhante['id']}",
+        headers=_auth(token),
+    )
+    assert resp.status_code == 204
+    resp_get = client.get(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes/{acompanhante['id']}",
+        headers=_auth(token),
+    )
+    assert resp_get.status_code == 404
+
+
+def test_cerimonialista_lista_acompanhantes(client):
+    token_org = _cadastrar_e_login(client, ORGANIZADOR)
+    evento = _criar_evento(client, token_org)
+    convidado = _criar_convidado(client, token_org, evento["id"])
+    _criar_acompanhante(client, token_org, evento["id"], convidado["id"])
+    token_ceri = _token_cerimonialista(client, token_org)
+    resp = client.get(
+        f"/eventos/{evento['id']}/convidados/{convidado['id']}/acompanhantes",
+        headers=_auth(token_ceri),
+    )
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
 
 
 # ---------------------------------------------------------------------------

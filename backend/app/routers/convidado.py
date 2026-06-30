@@ -8,6 +8,9 @@ from app.core.deps import (
 from app.db.database import get_db
 from app.models.usuario import Usuario
 from app.schemas.convidado import (
+    AcompanhanteCreate,
+    AcompanhanteRead,
+    AcompanhanteUpdate,
     ConfirmarPresencaBody,
     ConvidadoCreate,
     ConvidadoRead,
@@ -17,15 +20,20 @@ from app.schemas.convidado import (
     MesaUpdate,
 )
 from app.services.convidado_service import (
+    adicionar_acompanhante,
+    atualizar_acompanhante,
     atualizar_convidado,
     atualizar_mesa,
+    buscar_acompanhante,
     buscar_convidado,
     buscar_mesa,
     cadastrar_convidado,
     confirmar_presenca,
     criar_mesa,
+    excluir_acompanhante,
     excluir_convidado,
     excluir_mesa,
+    listar_acompanhantes,
     listar_convidados,
     listar_mesas,
 )
@@ -97,6 +105,93 @@ def excluir_convidado_route(
     buscar_evento(db, evento_id, usuario)
     convidado = buscar_convidado(db, convidado_id, evento_id)
     excluir_convidado(db, convidado)
+
+
+# ---------------------------------------------------------------------------
+# Acompanhantes (gestão administrativa, pelo organizador)
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/convidados/{convidado_id}/acompanhantes",
+    response_model=AcompanhanteRead,
+    status_code=201,
+)
+def criar_acompanhante(
+    evento_id: int,
+    convidado_id: int,
+    body: AcompanhanteCreate,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(require_organizador),
+):
+    buscar_evento(db, evento_id, usuario)
+    convidado = buscar_convidado(db, convidado_id, evento_id)
+    return adicionar_acompanhante(db, convidado, body.nome)
+
+
+@router.get(
+    "/convidados/{convidado_id}/acompanhantes",
+    response_model=list[AcompanhanteRead],
+)
+def listar_acompanhantes_route(
+    evento_id: int,
+    convidado_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(require_organizador_ou_cerimonialista),
+):
+    buscar_evento(db, evento_id, usuario)
+    buscar_convidado(db, convidado_id, evento_id)
+    return listar_acompanhantes(db, convidado_id)
+
+
+@router.get(
+    "/convidados/{convidado_id}/acompanhantes/{acompanhante_id}",
+    response_model=AcompanhanteRead,
+)
+def obter_acompanhante(
+    evento_id: int,
+    convidado_id: int,
+    acompanhante_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(require_organizador_ou_cerimonialista),
+):
+    buscar_evento(db, evento_id, usuario)
+    buscar_convidado(db, convidado_id, evento_id)
+    return buscar_acompanhante(db, acompanhante_id, convidado_id)
+
+
+@router.patch(
+    "/convidados/{convidado_id}/acompanhantes/{acompanhante_id}",
+    response_model=AcompanhanteRead,
+)
+def atualizar_acompanhante_route(
+    evento_id: int,
+    convidado_id: int,
+    acompanhante_id: int,
+    body: AcompanhanteUpdate,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(require_organizador),
+):
+    buscar_evento(db, evento_id, usuario)
+    buscar_convidado(db, convidado_id, evento_id)
+    acompanhante = buscar_acompanhante(db, acompanhante_id, convidado_id)
+    return atualizar_acompanhante(db, acompanhante, body.nome)
+
+
+@router.delete(
+    "/convidados/{convidado_id}/acompanhantes/{acompanhante_id}",
+    status_code=204,
+)
+def excluir_acompanhante_route(
+    evento_id: int,
+    convidado_id: int,
+    acompanhante_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(require_organizador),
+):
+    buscar_evento(db, evento_id, usuario)
+    convidado = buscar_convidado(db, convidado_id, evento_id)
+    acompanhante = buscar_acompanhante(db, acompanhante_id, convidado.id)
+    excluir_acompanhante(db, acompanhante)
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import (
+    AcompanhanteNaoEncontradoError,
     ConvidadoNaoEncontradoError,
     EmailJaCadastradoError,
     LimiteAcompanhantesExcedidoError,
@@ -128,6 +129,58 @@ def confirmar_presenca(
     db.commit()
     db.refresh(convidado)
     return convidado
+
+
+# ---------------------------------------------------------------------------
+# Acompanhantes (gestão administrativa, pelo organizador)
+# ---------------------------------------------------------------------------
+
+def adicionar_acompanhante(db: Session, convidado: Convidado, nome: str) -> Acompanhante:
+    max_ac = convidado.evento.max_acompanhantes_por_convidado
+    total_atual = (
+        db.query(Acompanhante).filter(Acompanhante.convidado_id == convidado.id).count()
+    )
+    if total_atual >= max_ac:
+        raise LimiteAcompanhantesExcedidoError()
+
+    acompanhante = Acompanhante(convidado_id=convidado.id, nome=nome)
+    db.add(acompanhante)
+    db.commit()
+    db.refresh(acompanhante)
+    return acompanhante
+
+
+def listar_acompanhantes(db: Session, convidado_id: int) -> list[Acompanhante]:
+    return (
+        db.query(Acompanhante)
+        .filter(Acompanhante.convidado_id == convidado_id)
+        .order_by(Acompanhante.nome)
+        .all()
+    )
+
+
+def buscar_acompanhante(db: Session, acompanhante_id: int, convidado_id: int) -> Acompanhante:
+    acompanhante = (
+        db.query(Acompanhante)
+        .filter(Acompanhante.id == acompanhante_id, Acompanhante.convidado_id == convidado_id)
+        .first()
+    )
+    if acompanhante is None:
+        raise AcompanhanteNaoEncontradoError()
+    return acompanhante
+
+
+def atualizar_acompanhante(db: Session, acompanhante: Acompanhante, nome: str | None = None) -> Acompanhante:
+    if nome is not None:
+        acompanhante.nome = nome
+    db.commit()
+    db.refresh(acompanhante)
+    return acompanhante
+
+
+def excluir_acompanhante(db: Session, acompanhante: Acompanhante) -> None:
+    db.delete(acompanhante)
+    db.commit()
 
 
 # ---------------------------------------------------------------------------

@@ -57,6 +57,10 @@ class LimiteAcompanhantesExcedidoError(DomainError):
     pass
 
 
+class AcompanhanteNaoEncontradoError(DomainError):
+    pass
+
+
 class PresenteNaoEncontradoError(DomainError):
     pass
 
