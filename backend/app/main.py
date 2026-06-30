@@ -19,6 +19,7 @@ from app.core.exceptions import (
     ReservaPresenteJaExisteError,
     ReservaPresenteNaoEncontradaError,
     SenhaAtualInvalidaError,
+    TarefaNaoEncontradoError,
     TokenExpiradoError,
     TokenInvalidoError,
     TokenJaUsadoError,
@@ -30,6 +31,7 @@ from app.routers.convidado import confirmacao_router, router as convidado_router
 from app.routers.evento import router as evento_router
 from app.routers.fornecedor import router as fornecedor_router
 from app.routers.presente import reserva_router as presente_reserva_router, router as presente_router
+from app.routers.tarefa import router as tarefa_router
 
 app = FastAPI(
     title="celebra-15 API",
@@ -156,6 +158,11 @@ async def valor_sinal_invalido_handler(request: Request, exc: ValorSinalInvalido
     )
 
 
+@app.exception_handler(TarefaNaoEncontradoError)
+async def tarefa_nao_encontrado_handler(request: Request, exc: TarefaNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Tarefa não encontrada."})
+
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
@@ -165,9 +172,10 @@ app.include_router(confirmacao_router)
 app.include_router(presente_router)
 app.include_router(presente_reserva_router)
 app.include_router(fornecedor_router)
+app.include_router(tarefa_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# tarefas, homenagens, anotacoes_cerimoniais, musicas, avisos,
+# homenagens, anotacoes_cerimoniais, musicas, avisos,
 # albuns, fotos, postagens, comentarios, curtidas
 
 
