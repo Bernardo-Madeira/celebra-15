@@ -83,3 +83,7 @@ class PagamentoNaoEncontradoError(DomainError):
 
 class ValorSinalInvalidoError(DomainError):
     """Valor do sinal não pode ser maior que o valor total do pagamento."""
+
+
+class TarefaNaoEncontradoError(DomainError):
+    pass
