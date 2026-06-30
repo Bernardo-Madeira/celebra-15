@@ -71,3 +71,15 @@ class ReservaPresenteJaExisteError(DomainError):
 
 class CotaPresenteEsgotadaError(DomainError):
     """Presente já atingiu a quantidade máxima de contribuintes."""
+
+
+class FornecedorNaoEncontradoError(DomainError):
+    pass
+
+
+class PagamentoNaoEncontradoError(DomainError):
+    pass
+
+
+class ValorSinalInvalidoError(DomainError):
+    """Valor do sinal não pode ser maior que o valor total do pagamento."""

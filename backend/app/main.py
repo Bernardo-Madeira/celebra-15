@@ -10,9 +10,11 @@ from app.core.exceptions import (
     CredenciaisInvalidasError,
     EmailJaCadastradoError,
     EventoNaoEncontradoError,
+    FornecedorNaoEncontradoError,
     LimiteAcompanhantesExcedidoError,
     MesaLotadaError,
     MesaNaoEncontradaError,
+    PagamentoNaoEncontradoError,
     PresenteNaoEncontradoError,
     ReservaPresenteJaExisteError,
     ReservaPresenteNaoEncontradaError,
@@ -21,10 +23,12 @@ from app.core.exceptions import (
     TokenInvalidoError,
     TokenJaUsadoError,
     UsuarioNaoEncontradoError,
+    ValorSinalInvalidoError,
 )
 from app.routers import auth, health, usuario
 from app.routers.convidado import confirmacao_router, router as convidado_router
 from app.routers.evento import router as evento_router
+from app.routers.fornecedor import router as fornecedor_router
 from app.routers.presente import reserva_router as presente_reserva_router, router as presente_router
 
 app = FastAPI(
@@ -135,6 +139,23 @@ async def cota_presente_esgotada_handler(request: Request, exc: CotaPresenteEsgo
     )
 
 
+@app.exception_handler(FornecedorNaoEncontradoError)
+async def fornecedor_nao_encontrado_handler(request: Request, exc: FornecedorNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Fornecedor não encontrado."})
+
+
+@app.exception_handler(PagamentoNaoEncontradoError)
+async def pagamento_nao_encontrado_handler(request: Request, exc: PagamentoNaoEncontradoError):
+    return JSONResponse(status_code=404, content={"detail": "Pagamento não encontrado."})
+
+
+@app.exception_handler(ValorSinalInvalidoError)
+async def valor_sinal_invalido_handler(request: Request, exc: ValorSinalInvalidoError):
+    return JSONResponse(
+        status_code=422, content={"detail": "Valor do sinal não pode ser maior que o valor total."}
+    )
+
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(usuario.router)
@@ -143,11 +164,11 @@ app.include_router(convidado_router)
 app.include_router(confirmacao_router)
 app.include_router(presente_router)
 app.include_router(presente_reserva_router)
+app.include_router(fornecedor_router)
 
 # Próximos routers a registrar aqui conforme implementados:
-# fornecedores, pagamentos, tarefas, homenagens,
-# anotacoes_cerimoniais, musicas, avisos, albuns, fotos,
-# postagens, comentarios, curtidas
+# tarefas, homenagens, anotacoes_cerimoniais, musicas, avisos,
+# albuns, fotos, postagens, comentarios, curtidas
 
 
 @app.get("/")
