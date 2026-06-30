@@ -55,3 +55,19 @@ class MesaLotadaError(DomainError):
 
 class LimiteAcompanhantesExcedidoError(DomainError):
     pass
+
+
+class PresenteNaoEncontradoError(DomainError):
+    pass
+
+
+class ReservaPresenteNaoEncontradaError(DomainError):
+    pass
+
+
+class ReservaPresenteJaExisteError(DomainError):
+    """Convidado já contribuiu com este presente."""
+
+
+class CotaPresenteEsgotadaError(DomainError):
+    """Presente já atingiu a quantidade máxima de contribuintes."""
