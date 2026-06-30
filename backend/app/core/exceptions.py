@@ -95,3 +95,7 @@ class HomenagemNaoEncontradaError(DomainError):
 
 class AnotacaoCerimonialNaoEncontradaError(DomainError):
     pass
+
+
+class AvisoNaoEncontradoError(DomainError):
+    pass
